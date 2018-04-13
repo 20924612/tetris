@@ -26,7 +26,11 @@ public class Shape {
 
     public Shape(Tetrominoes pieceShape) {
         this.pieceShape = pieceShape;
-        coordinates = coordsTable[pieceShape.ordinal()];
+        coordinates = new int[4][2];
+        for (int point = 0; point < coordinates.length; point++) {
+            coordinates[point][0] = coordsTable[pieceShape.ordinal()][point][0];
+            coordinates[point][1] = coordsTable[pieceShape.ordinal()][point][1];
+        }
 
     }
 
@@ -34,11 +38,36 @@ public class Shape {
 
         int randomNumber = (int) (Math.random() * 7) + 1;
         pieceShape = Tetrominoes.values()[randomNumber];
-        coordinates = coordsTable[randomNumber];
+        coordinates = new int[4][2];
+        for (int point = 0; point < coordinates.length; point++) {
+            coordinates[point][0] = coordsTable[randomNumber][point][0];
+            coordinates[point][1] = coordsTable[randomNumber][point][1];
+        }
     }
-    
-    public static Shape getRandomShape(){
+
+    public Shape rotateRight() {
+
+        Shape rotateShape = new Shape(pieceShape);
         
+
+        for (int point = 0; point <= 3; point++) {
+            rotateShape.coordinates[point][0] = coordinates[point][0];
+            rotateShape.coordinates[point][1] = coordinates[point][1];
+        }
+
+        if (pieceShape != Tetrominoes.SquareShape) {
+
+            for (int point = 0; point <= 3; point++) {
+                int temp = rotateShape.coordinates[point][0];
+                rotateShape.coordinates[point][0] = -rotateShape.coordinates[point][1];
+                rotateShape.coordinates[point][1] = temp;
+            }
+        }
+        return rotateShape;
+    }
+
+    public static Shape getRandomShape() {
+
         return new Shape();
     }
 
@@ -48,5 +77,55 @@ public class Shape {
 
     public Tetrominoes getShape() {
         return pieceShape;
+    }
+
+    public int getXMin() {
+        int min = coordinates[0][0];
+        for (int i = 1; i < coordinates.length; i++) {
+
+            if (min > coordinates[i][0]) {
+                min = coordinates[i][0];
+            }
+
+        }
+        return min;
+    }
+
+    public int getXMax() {
+
+        int max = coordinates[0][0];
+        for (int i = 1; i < coordinates.length; i++) {
+
+            if (max < coordinates[i][0]) {
+                max = coordinates[i][0];
+            }
+
+        }
+        return max;
+    }
+
+    public int getYMin() {
+
+        int min = coordinates[0][1];
+        for (int i = 1; i < coordinates.length; i++) {
+            if (min > coordinates[i][1]) {
+                min = coordinates[i][1];
+            }
+        }
+
+        return min;
+    }
+
+    public int getYMax() {
+
+        int max = coordinates[0][1];
+        for (int i = 1; i < coordinates.length; i++) {
+
+            if (max < coordinates[i][1]) {
+                max = coordinates[i][1];
+            }
+
+        }
+        return max;
     }
 }
