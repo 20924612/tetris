@@ -29,6 +29,9 @@ public class Board extends JPanel implements ActionListener {
     private int currentRow;
     private int currentCol;
     private Timer timer;
+    private boolean isPaused;
+
+    public IncrementScorer scorerDelegate;
 
     public Board() {
 
@@ -40,6 +43,10 @@ public class Board extends JPanel implements ActionListener {
 
     }
 
+    public void setScorer(IncrementScorer scorer) {
+        this.scorerDelegate = scorer;
+    }
+
     public void initValues() {
 
         setFocusable(true);
@@ -48,12 +55,18 @@ public class Board extends JPanel implements ActionListener {
         currentShape = null;
         currentRow = -2;
         currentCol = NUM_COLS / 2;
+        isPaused = false;
 
     }
 
     public void initGame() {
         initValues();
         timer.start();
+        removeKeyListener(keyAdapter);
+        if (scorerDelegate != null) {
+
+            scorerDelegate.reset();
+        }
         addKeyListener(keyAdapter);
         currentShape = new Shape();
     }
@@ -67,6 +80,39 @@ public class Board extends JPanel implements ActionListener {
 
         }
         return true;
+    }
+
+    private void checkColumns() {
+
+        for (int row = 0; row < NUM_ROWS; row++) {
+            int acc = NUM_COLS;
+            for (int col = 0; col < NUM_COLS; col++) {
+                if (matrix[row][col] != Tetrominoes.NoShape) {
+                    acc--;
+                }
+
+            }
+            if (acc == 0) {
+                removeLine(row);
+                repaint();
+                scorerDelegate.increment(1);
+            }
+        }
+    }
+
+    private void removeLine(int numRow) {
+
+        for (int row = numRow; row > 0; row--) {
+
+            for (int col = 0; col < NUM_COLS; col++) {
+                matrix[row][col] = matrix[row - 1][col];
+
+            }
+        }
+
+        for (int col = 0; col < NUM_COLS; col++) {
+            matrix[0][col] = Tetrominoes.NoShape;
+        }
     }
 
     private boolean hitWithMatrix(Shape shape, int newRow, int newCol) {
@@ -164,7 +210,7 @@ public class Board extends JPanel implements ActionListener {
             moveCurrentShapeToMatrix();
             currentShape = new Shape();
             currentRow = INIT_ROWS;
-            currentCol = NUM_COLS /2;
+            currentCol = NUM_COLS / 2;
 
         }
     }
@@ -178,6 +224,7 @@ public class Board extends JPanel implements ActionListener {
             matrix[row][col] = currentShape.getShape();
 
         }
+        checkColumns();
     }
 
     private void cleanBoard() {
@@ -196,30 +243,40 @@ public class Board extends JPanel implements ActionListener {
         public void keyPressed(KeyEvent e) {
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_LEFT:
-                    if (canMoveTo(currentShape, currentRow, currentCol - 1)) {
+                    if (canMoveTo(currentShape, currentRow, currentCol - 1) && ! isPaused) {
                         currentCol--;
-                        
+
                     }
                     break;
                 case KeyEvent.VK_RIGHT:
-                    if (canMoveTo(currentShape, currentRow, currentCol + 1)) {
+                    if (canMoveTo(currentShape, currentRow, currentCol + 1)&& ! isPaused) {
                         currentCol++;
-                        
+
                     }
                     break;
                 case KeyEvent.VK_UP:
                     Shape rotShape = currentShape.rotateRight();
-                    if (canMoveTo(rotShape, currentRow, currentCol)) {
-                        currentShape=rotShape;
-                        
+                    if (canMoveTo(rotShape, currentRow, currentCol)&& ! isPaused) {
+                        currentShape = rotShape;
+
                     }
                     break;
                 case KeyEvent.VK_DOWN:
-                    if (canMoveTo(currentShape, currentRow + 1, currentCol)) {
+                    if (canMoveTo(currentShape, currentRow + 1, currentCol)&& ! isPaused) {
                         currentRow++;
-                        
+
                     }
                     break;
+                case KeyEvent.VK_P:
+                    if (timer.isRunning()&& ! isPaused) {
+                        timer.stop();
+                        isPaused=true;
+
+                    } else {
+
+                        timer.start();
+                        isPaused=false;
+                    }
                 default:
                     break;
             }
