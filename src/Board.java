@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
@@ -221,10 +222,32 @@ public class Board extends JPanel implements ActionListener {
         for (int point = 0; point <= 3; point++) {
             int row = currentRow + squaresArray[point][1];
             int col = currentCol + squaresArray[point][0];
-            matrix[row][col] = currentShape.getShape();
+            if (row < 0) {
+                gameOver();
+
+                return;
+            } else {
+
+                matrix[row][col] = currentShape.getShape();
+            }
 
         }
         checkColumns();
+    }
+
+    private void gameOver() {
+
+        timer.stop();
+
+        int n = JOptionPane.showConfirmDialog(
+                this, "Points:" + scorerDelegate.getScore() + "\n Play again?", "GAME OVER", JOptionPane.YES_NO_OPTION);
+
+        if (n == 0) {
+
+            initGame();
+        } else {
+            System.exit(0);
+        }
     }
 
     private void cleanBoard() {
@@ -243,39 +266,39 @@ public class Board extends JPanel implements ActionListener {
         public void keyPressed(KeyEvent e) {
             switch (e.getKeyCode()) {
                 case KeyEvent.VK_LEFT:
-                    if (canMoveTo(currentShape, currentRow, currentCol - 1) && ! isPaused) {
+                    if (canMoveTo(currentShape, currentRow, currentCol - 1) && !isPaused) {
                         currentCol--;
 
                     }
                     break;
                 case KeyEvent.VK_RIGHT:
-                    if (canMoveTo(currentShape, currentRow, currentCol + 1)&& ! isPaused) {
+                    if (canMoveTo(currentShape, currentRow, currentCol + 1) && !isPaused) {
                         currentCol++;
 
                     }
                     break;
                 case KeyEvent.VK_UP:
                     Shape rotShape = currentShape.rotateRight();
-                    if (canMoveTo(rotShape, currentRow, currentCol)&& ! isPaused) {
+                    if (canMoveTo(rotShape, currentRow, currentCol) && !isPaused) {
                         currentShape = rotShape;
 
                     }
                     break;
                 case KeyEvent.VK_DOWN:
-                    if (canMoveTo(currentShape, currentRow + 1, currentCol)&& ! isPaused) {
+                    if (canMoveTo(currentShape, currentRow + 1, currentCol) && !isPaused) {
                         currentRow++;
 
                     }
                     break;
                 case KeyEvent.VK_P:
-                    if (timer.isRunning()&& ! isPaused) {
+                    if (timer.isRunning() && !isPaused) {
                         timer.stop();
-                        isPaused=true;
+                        isPaused = true;
 
                     } else {
 
                         timer.start();
-                        isPaused=false;
+                        isPaused = false;
                     }
                 default:
                     break;

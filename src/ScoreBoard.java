@@ -35,4 +35,8 @@ public class ScoreBoard extends JLabel implements IncrementScorer{
         score = 0;
         setText("Score: 0");
     }
+    
+    public int getScore(){
+        return score;
+    }
 }
