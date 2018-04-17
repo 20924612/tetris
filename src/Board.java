@@ -5,6 +5,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
@@ -31,6 +33,9 @@ public class Board extends JPanel implements ActionListener {
     private int currentCol;
     private Timer timer;
     private boolean isPaused;
+    private NextPiece nextPiece;
+    private SavePiece savePiece;
+    private boolean canSavePiece;
 
     public IncrementScorer scorerDelegate;
 
@@ -42,6 +47,7 @@ public class Board extends JPanel implements ActionListener {
         initValues();
         timer = new Timer(deltaTime, this);
 
+        canSavePiece = true;
     }
 
     public void setScorer(IncrementScorer scorer) {
@@ -54,6 +60,7 @@ public class Board extends JPanel implements ActionListener {
         cleanBoard();
         deltaTime = 500;
         currentShape = null;
+        nextPiece = new NextPiece();
         currentRow = -2;
         currentCol = NUM_COLS / 2;
         isPaused = false;
@@ -97,7 +104,12 @@ public class Board extends JPanel implements ActionListener {
                 removeLine(row);
                 repaint();
                 scorerDelegate.increment(1);
+
+                if (scorerDelegate.getScore() % 5 == 0) {
+                    deltaTime -= 100;
+                }
             }
+
         }
     }
 
@@ -137,6 +149,7 @@ public class Board extends JPanel implements ActionListener {
         drawBoard(g);
         if (currentShape != null) {
             drawCurrentShape(g);
+
         }
         drawBorder(g);
 
@@ -209,11 +222,27 @@ public class Board extends JPanel implements ActionListener {
         } else {
 
             moveCurrentShapeToMatrix();
-            currentShape = new Shape();
-            currentRow = INIT_ROWS;
-            currentCol = NUM_COLS / 2;
+            currentShape = nextPiece.getShape();
+            nextPiece.changeShape(Shape.getRandomShape());
+            canSavePiece = true;
+            changeCurrentPos();
 
         }
+    }
+
+    private void changeCurrentPos() {
+        currentRow = INIT_ROWS;
+        currentCol = NUM_COLS / 2;
+    }
+
+    public void setNextPiece(NextPiece np) {
+
+        nextPiece = np;
+    }
+
+    public void setSavePiece(SavePiece sp) {
+
+        savePiece = sp;
     }
 
     public void moveCurrentShapeToMatrix() {
@@ -238,6 +267,33 @@ public class Board extends JPanel implements ActionListener {
     private void gameOver() {
 
         timer.stop();
+        Thread t = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (int row = 0; row < NUM_ROWS; row++) {
+                    for (int col = 0; col < NUM_COLS; col++) {
+                        matrix[row][col] = Tetrominoes.LineShape;
+
+                        repaint();
+
+                        try {
+                            Thread.sleep(20);
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(Board.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                    }
+
+                }
+                showRestart();
+
+            }
+        });
+
+        t.start();
+
+    }
+
+    private void showRestart() {
 
         int n = JOptionPane.showConfirmDialog(
                 this, "Points:" + scorerDelegate.getScore() + "\n Play again?", "GAME OVER", JOptionPane.YES_NO_OPTION);
@@ -300,6 +356,25 @@ public class Board extends JPanel implements ActionListener {
                         timer.start();
                         isPaused = false;
                     }
+                case KeyEvent.VK_C:
+
+                    if (canSavePiece) {
+                        Shape temp = savePiece.setPieceShape(currentShape);
+                        if (temp == null) {
+
+                            currentShape = nextPiece.getShape();
+
+                            nextPiece.changeShape(Shape.getRandomShape());
+
+                            changeCurrentPos();
+                        } else {
+                            currentShape = temp;
+                            changeCurrentPos();
+
+                        }
+                        canSavePiece = false;
+                    }
+
                 default:
                     break;
             }
