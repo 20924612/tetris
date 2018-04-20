@@ -1,3 +1,6 @@
+
+import java.awt.Graphics;
+
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -127,5 +130,13 @@ public class Shape {
 
         }
         return max;
+    }
+    
+    public void draw(Graphics g, int row, int col, int squareWidth, int squareHeight) {
+
+
+        for (int point = 0; point <= 3; point++) {
+            Util.drawSquare(g, row + coordinates[point][1], col + coordinates[point][0], pieceShape, squareWidth, squareHeight);
+        }
     }
 }
