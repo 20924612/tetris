@@ -7,12 +7,16 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.BufferedWriter;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.Timer;
+
 
 /*
  * To change this license header, choose License Headers in Project Properties.
@@ -39,6 +43,8 @@ public class Board extends JPanel implements ActionListener {
     private NextPiece nextPiece;
     private SavePiece savePiece;
     private boolean canSavePiece;
+    private boolean isGameOver = false;
+    private JFrame parentFrame;
 
     public IncrementScorer scorerDelegate;
 
@@ -50,6 +56,7 @@ public class Board extends JPanel implements ActionListener {
         initValues();
         timer = new Timer(deltaTime, this);
         canSavePiece = true;
+        
     }
 
     public void setScorer(IncrementScorer scorer) {
@@ -79,6 +86,9 @@ public class Board extends JPanel implements ActionListener {
         }
         addKeyListener(keyAdapter);
         currentShape = Shape.getRandomShape();
+        
+        
+        
 
     }
 
@@ -137,7 +147,7 @@ public class Board extends JPanel implements ActionListener {
         for (int point = 0; point <= 3; point++) {
             int row = newRow + squaresArray[point][1];
             int col = newCol + squaresArray[point][0];
-            if (row >= 0 && col > 0) {
+            if (row >= 0 && col >= 0) {
                 if (matrix[row][col] != Tetrominoes.NoShape) {
                     return true;
                 }
@@ -210,6 +220,11 @@ public class Board extends JPanel implements ActionListener {
 
         nextPiece = np;
     }
+    
+    public void setParentFrame(){
+        
+        this.parentFrame=parentFrame;
+    }
 
     public void setSavePiece(SavePiece sp) {
 
@@ -257,14 +272,15 @@ public class Board extends JPanel implements ActionListener {
                     }
 
                 }
-
+                isGameOver = true;
                 showRestart();
 
             }
         });
 
         t.start();
-
+        RecordsDialog r = new RecordsDialog(parentFrame, true, scorerDelegate.getScore());
+        r.setVisible(true);
     }
 
     private void showRestart() {
@@ -289,6 +305,7 @@ public class Board extends JPanel implements ActionListener {
         }
 
     }
+
 
     class MyKeyAdapter extends KeyAdapter {
 
